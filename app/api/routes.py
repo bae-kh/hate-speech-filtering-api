@@ -1,16 +1,23 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from app.schemas.payload import DetectRequest, DetectResponse
+from app.services.model import HateSpeechModel
+from starlette.concurrency import run_in_threadpool
 
 router = APIRouter()
 
 @router.post("/detect", response_model=DetectResponse)
-async def detect_text(request: DetectRequest) -> DetectResponse:
+async def detect_text(request: DetectRequest, fastapi_req: Request) -> DetectResponse:
     """
     텍스트의 혐오 표현 여부를 분석합니다.
-    (Phase 1: 클라이언트-서버 통신 안정성 확보를 위한 Mock 응답 반환)
+    동기 모델 추론이 이벤트 루프를 블로킹하지 않도록 threadpool로 격리하여 실행합니다.
     """
+    model: HateSpeechModel = fastapi_req.app.state.model
+    
+    # 무거운 동기 추론 작업을 별도의 스레드에서 실행되도록 위임
+    result = await run_in_threadpool(model.predict, request.text)
+    
     return DetectResponse(
-        is_hate_speech=False,
-        confidence=0.0,
-        message="Hello SKT - MVP Ready"
+        is_hate_speech=result["is_hate_speech"],
+        confidence=result["confidence"],
+        message=result["message"]
     )

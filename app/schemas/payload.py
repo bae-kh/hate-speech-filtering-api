@@ -1,11 +1,19 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 class DetectRequest(BaseModel):
     text: str = Field(
         ..., 
         min_length=1, 
-        description="분석할 텍스트 입력값. 빈 문자열은 허용되지 않습니다."
+        max_length=2000, 
+        description="분석할 텍스트 입력값. 공백만 있는 문자열은 허용되지 않습니다."
     )
+
+    @field_validator("text")
+    @classmethod
+    def text_must_not_be_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("text must not be blank")
+        return value
 
 class DetectResponse(BaseModel):
     is_hate_speech: bool = Field(..., description="혐오 표현 포함 여부")
