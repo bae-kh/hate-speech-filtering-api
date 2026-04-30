@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Python environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+
+# Pytest and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+
+# Docker
+Dockerfile
+.dockerignore
+
+# HuggingFace Cache (로컬 캐시가 도커 이미지에 포함되지 않도록 방지)
+.cache/
