@@ -1,42 +1,95 @@
-import pytest
+from typing import Any
+from unittest.mock import patch
+
 from fastapi.testclient import TestClient
+
 from app.main import app
 
-client = TestClient(app)
 
-def test_detect_success() -> None:
-    """정상적인 텍스트 입력 시 200 OK와 올바른 JSON 구조, 헤더를 반환하는지 검증합니다."""
-    payload: dict[str, str] = {"text": "테스트 문장"}
-    response = client.post("/api/v1/detect", json=payload)
-    
+class FakeHateSpeechModel:
+    def load(self) -> None:
+        pass
+
+    def unload(self) -> None:
+        pass
+
+    def predict(self, text: str) -> dict[str, Any]:
+        return {
+            "is_hate_speech": False,
+            "confidence": 0.99,
+            "message": "Detected category: clean"
+        }
+
+
+@patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
+def test_health_check(mock_model: Any) -> None:
+    with TestClient(app) as client:
+        response = client.get("/api/v1/health")
+
     assert response.status_code == 200
-    
-    # 1. 헤더 검증 (대규모 트래픽 추적용 UUID)
+    assert response.json()["status"] == "ok"
     assert "x-request-id" in response.headers
     assert len(response.headers["x-request-id"]) > 0
 
-    # 2. JSON 응답 구조 및 값 검증
-    data: dict[str, any] = response.json()
-    assert "is_hate_speech" in data
-    assert "confidence" in data
-    assert "message" in data
-    
-    assert data["is_hate_speech"] is False
-    assert data["confidence"] == 0.0
-    assert data["message"] == "Hello SKT - MVP Ready"
 
-def test_detect_empty_text() -> None:
-    """빈 문자열 입력 시 Pydantic 검증에 의해 422 Unprocessable Entity 에러가 발생하는지 검증합니다."""
+@patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
+def test_detect_success(mock_model: Any) -> None:
+    payload: dict[str, str] = {"text": "테스트 문장입니다."}
+
+    with TestClient(app) as client:
+        response = client.post("/api/v1/detect", json=payload)
+
+    assert response.status_code == 200
+    assert "x-request-id" in response.headers
+    assert len(response.headers["x-request-id"]) > 0
+
+    data: dict[str, Any] = response.json()
+    assert data["is_hate_speech"] is False
+    assert data["confidence"] == 0.99
+    assert data["category"] == "clean"
+    assert data["action"] == "allow"
+    assert data["message"] == "Message allowed."
+
+
+@patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
+def test_detect_empty_text_validation(mock_model: Any) -> None:
     payload: dict[str, str] = {"text": ""}
-    response = client.post("/api/v1/detect", json=payload)
-    
+
+    with TestClient(app) as client:
+        response = client.post("/api/v1/detect", json=payload)
+
     assert response.status_code == 422
     assert "x-request-id" in response.headers
 
-def test_detect_missing_text() -> None:
-    """필수 파라미터(text) 누락 시 422 에러가 발생하는지 검증합니다."""
+
+@patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
+def test_detect_blank_text_validation(mock_model: Any) -> None:
+    payload: dict[str, str] = {"text": "   "}
+
+    with TestClient(app) as client:
+        response = client.post("/api/v1/detect", json=payload)
+
+    assert response.status_code == 422
+    assert "x-request-id" in response.headers
+
+
+@patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
+def test_detect_missing_text_validation(mock_model: Any) -> None:
     payload: dict[str, str] = {}
-    response = client.post("/api/v1/detect", json=payload)
-    
+
+    with TestClient(app) as client:
+        response = client.post("/api/v1/detect", json=payload)
+
+    assert response.status_code == 422
+    assert "x-request-id" in response.headers
+
+
+@patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
+def test_detect_too_long_text_validation(mock_model: Any) -> None:
+    payload: dict[str, str] = {"text": "a" * 501}
+
+    with TestClient(app) as client:
+        response = client.post("/api/v1/detect", json=payload)
+
     assert response.status_code == 422
     assert "x-request-id" in response.headers

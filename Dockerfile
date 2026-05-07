@@ -12,10 +12,10 @@ COPY requirements.txt .
 
 RUN python -m pip install --upgrade pip setuptools wheel
 
-RUN python -m pip install --no-cache-dir \
+RUN python -m pip install --no-cache-dir --no-compile \
     "https://download.pytorch.org/whl/cpu/torch-2.2.2%2Bcpu-cp311-cp311-linux_x86_64.whl"
 
-RUN python -m pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --no-cache-dir --no-compile -r requirements.txt
 
 COPY . .
 

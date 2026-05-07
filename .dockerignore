@@ -21,9 +21,9 @@ htmlcov/
 .idea/
 *.swp
 
-# Docker
-Dockerfile
-.dockerignore
+# OS
+.DS_Store
+Thumbs.db
 
-# HuggingFace Cache (로컬 캐시가 도커 이미지에 포함되지 않도록 방지)
+# HuggingFace local cache
 .cache/
