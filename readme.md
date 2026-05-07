@@ -1,4 +1,5 @@
 # Real-time AI Hate Speech Filtering API Server
+![CI](https://github.com/baekh/hate-speech-filtering-api/actions/workflows/ci.yml/badge.svg)
 
 HuggingFace 기반 한국어 혐오 표현 분류 모델을 FastAPI 서버로 서빙하기 위한 MLOps / Backend 포트폴리오 프로젝트입니다.
 
@@ -441,3 +442,22 @@ Model input limit:
 - max_length = 256 tokens
 - truncation = True
 ```
+
+## PHASE 4. CI
+
+GitHub Actions를 사용해 테스트와 Docker build 검증을 자동화했습니다.
+
+CI는 `push` 또는 `pull_request` 이벤트가 발생하면 실행됩니다.
+
+검증 항목은 다음과 같습니다.
+
+- Python 3.11 환경 구성
+- PyTorch CPU-only wheel 설치
+- 프로젝트 의존성 설치
+- `pytest -v` 실행
+- Docker image build 검증
+
+Workflow file:
+
+```text
+.github/workflows/ci.yml
