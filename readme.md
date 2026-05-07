@@ -1,6 +1,6 @@
 # Real-time AI Hate Speech Filtering API Server
 
-[![CI](https://github.com/<GITHUB_ID>/<REPO_NAME>/actions/workflows/ci.yml/badge.svg)](https://github.com/<GITHUB_ID>/<REPO_NAME>/actions/workflows/ci.yml)
+[![CI](https://github.com/baekh/mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/baekh/mlops/actions/workflows/ci.yml)
 
 HuggingFace 기반 한국어 혐오 표현 분류 모델을 FastAPI 서버로 서빙하기 위한 MLOps / Backend 포트폴리오 프로젝트입니다.
 
