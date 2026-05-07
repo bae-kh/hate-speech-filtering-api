@@ -1,4 +1,5 @@
 name: CI
+# Run tests and Docker build on push and pull request
 
 on:
   push:
