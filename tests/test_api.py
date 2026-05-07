@@ -17,7 +17,9 @@ class FakeHateSpeechModel:
         return {
             "is_hate_speech": False,
             "confidence": 0.99,
-            "message": "Detected category: clean"
+            "category": "clean",
+            "action": "allow",
+            "message": "Message allowed."
         }
 
 
@@ -53,10 +55,8 @@ def test_detect_success(mock_model: Any) -> None:
 
 @patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
 def test_detect_empty_text_validation(mock_model: Any) -> None:
-    payload: dict[str, str] = {"text": ""}
-
     with TestClient(app) as client:
-        response = client.post("/api/v1/detect", json=payload)
+        response = client.post("/api/v1/detect", json={"text": ""})
 
     assert response.status_code == 422
     assert "x-request-id" in response.headers
@@ -64,10 +64,8 @@ def test_detect_empty_text_validation(mock_model: Any) -> None:
 
 @patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
 def test_detect_blank_text_validation(mock_model: Any) -> None:
-    payload: dict[str, str] = {"text": "   "}
-
     with TestClient(app) as client:
-        response = client.post("/api/v1/detect", json=payload)
+        response = client.post("/api/v1/detect", json={"text": "   "})
 
     assert response.status_code == 422
     assert "x-request-id" in response.headers
@@ -75,10 +73,8 @@ def test_detect_blank_text_validation(mock_model: Any) -> None:
 
 @patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
 def test_detect_missing_text_validation(mock_model: Any) -> None:
-    payload: dict[str, str] = {}
-
     with TestClient(app) as client:
-        response = client.post("/api/v1/detect", json=payload)
+        response = client.post("/api/v1/detect", json={})
 
     assert response.status_code == 422
     assert "x-request-id" in response.headers
@@ -86,10 +82,8 @@ def test_detect_missing_text_validation(mock_model: Any) -> None:
 
 @patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
 def test_detect_too_long_text_validation(mock_model: Any) -> None:
-    payload: dict[str, str] = {"text": "a" * 501}
-
     with TestClient(app) as client:
-        response = client.post("/api/v1/detect", json=payload)
+        response = client.post("/api/v1/detect", json={"text": "a" * 501})
 
     assert response.status_code == 422
     assert "x-request-id" in response.headers
