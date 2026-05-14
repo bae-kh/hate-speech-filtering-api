@@ -48,14 +48,14 @@ def test_model_predict_hate_low_confidence_requires_review() -> None:
     model.pipeline = MagicMock(return_value=[
         {
             "label": "hate",
-            "score": 0.67,
+            "score": 0.64,
         }
     ])
 
     result: dict[str, Any] = model.predict("애매한 유해 표현 예시")
 
     assert result["is_hate_speech"] is True
-    assert result["confidence"] == 0.67
+    assert result["confidence"] == 0.64
     assert result["category"] == "hate"
     assert result["action"] == "review"
     assert result["message"] == "Message requires human review."
