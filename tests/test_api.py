@@ -19,7 +19,7 @@ class FakeHateSpeechModel:
             "confidence": 0.99,
             "category": "clean",
             "action": "allow",
-            "message": "Message allowed."
+            "message": "Message allowed.",
         }
 
 
@@ -36,7 +36,7 @@ def test_health_check(mock_model: Any) -> None:
 
 @patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
 def test_detect_success(mock_model: Any) -> None:
-    payload: dict[str, str] = {"text": "테스트 문장입니다."}
+    payload: dict[str, str] = {"text": "신고된 댓글 예시입니다."}
 
     with TestClient(app) as client:
         response = client.post("/api/v1/detect", json=payload)
@@ -46,6 +46,7 @@ def test_detect_success(mock_model: Any) -> None:
     assert len(response.headers["x-request-id"]) > 0
 
     data: dict[str, Any] = response.json()
+
     assert data["is_hate_speech"] is False
     assert data["confidence"] == 0.99
     assert data["category"] == "clean"
@@ -83,7 +84,7 @@ def test_detect_missing_text_validation(mock_model: Any) -> None:
 @patch("app.main.HateSpeechModel", return_value=FakeHateSpeechModel())
 def test_detect_too_long_text_validation(mock_model: Any) -> None:
     with TestClient(app) as client:
-        response = client.post("/api/v1/detect", json={"text": "a" * 501})
+        response = client.post("/api/v1/detect", json={"text": "a" * 1001})
 
     assert response.status_code == 422
     assert "x-request-id" in response.headers
